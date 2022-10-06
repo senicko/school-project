@@ -5,20 +5,21 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type UserRepo struct {
-	dbConn *pgx.Conn
+	dbPool *pgxpool.Pool
 }
 
-func NewUserRepo(dbConn *pgx.Conn) *UserRepo {
+func NewUserRepo(dbPool *pgxpool.Pool) *UserRepo {
 	return &UserRepo{
-		dbConn: dbConn,
+		dbPool: dbPool,
 	}
 }
 
 func (r UserRepo) CreateUser(ctx context.Context, u User) (*User, error) {
-	row := r.dbConn.QueryRow(ctx, "INSERT INTO users (name, email, password) VALUES (?, ?, ?) RETURNING *", u.Name, u.Email, u.Password)
+	row := r.dbPool.QueryRow(ctx, "INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *", u.Name, u.Email, u.Password)
 
 	user, err := ScanUser(row)
 	if err != nil {
@@ -26,4 +27,21 @@ func (r UserRepo) CreateUser(ctx context.Context, u User) (*User, error) {
 	}
 
 	return user, nil
+}
+
+func (r UserRepo) FindByEmail(ctx context.Context, e string) (*User, error) {
+	row := r.dbPool.QueryRow(ctx, "SELECT * FROM users WHERE email=$1", e)
+
+	fmt.Println(row)
+
+	u, err := ScanUser(row)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, nil
+		}
+
+		return nil, fmt.Errorf("Failed to query by email: %w", err)
+	}
+
+	return u, nil
 }

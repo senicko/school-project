@@ -4,7 +4,7 @@ CREATE DATABASE school_project;
 
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
-  name TEXT NOT NULL,
-  email TEXT NOT NULL,
-  password BYTEA NOT NULL
+  name TEXT NOT NULL UNIQUE,
+  email TEXT NOT NULL UNIQUE,
+  password TEXT NOT NULL
 );

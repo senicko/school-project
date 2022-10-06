@@ -10,14 +10,14 @@ type User struct {
 	Id       int    `json:"id"`
 	Name     string `json:"name"`
 	Email    string `json:"email"`
-	Password []byte `json:"password"`
+	Password string `json:"password"`
 }
 
 // ScanUser scans query row into User struct.
 func ScanUser(r pgx.Row) (*User, error) {
 	u := &User{}
 
-	if err := r.Scan(u.Id, u.Name, u.Email, u.Password); err != nil {
+	if err := r.Scan(&u.Id, &u.Name, &u.Email, &u.Password); err != nil {
 		return nil, fmt.Errorf("Failed to scan a user: %w", err)
 	}
 

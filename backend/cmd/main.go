@@ -9,23 +9,23 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/senicko/school-project-backend/pkg/users"
 )
 
-func connectToDatabase() (*pgx.Conn, error) {
-	conn, err := pgx.Connect(context.Background(), os.Getenv("DATABASE_URL"))
+func connectToDatabase() (*pgxpool.Pool, error) {
+	dbPool, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
 
 	if err != nil {
 		return nil, err
 	}
 
-	if err := conn.Ping(context.Background()); err != nil {
+	if err := dbPool.Ping(context.Background()); err != nil {
 		return nil, err
 	}
 
-	return conn, nil
+	return dbPool, nil
 }
 
 func main() {
@@ -35,7 +35,8 @@ func main() {
 	}
 
 	// connect with database
-	conn, err := connectToDatabase()
+	dbPool, err := connectToDatabase()
+	defer dbPool.Close()
 
 	if err != nil {
 		log.Fatalf("Failed to connect with database: %v", err)
@@ -47,7 +48,7 @@ func main() {
 	r.Use(middleware.Logger)
 
 	// register user repo
-	userRepo := users.NewUserRepo(conn)
+	userRepo := users.NewUserRepo(dbPool)
 	userHandlers := users.NewUserHandlers(userRepo)
 
 	r.Post("/users", userHandlers.RegisterUser)
