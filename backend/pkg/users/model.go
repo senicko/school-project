@@ -1,8 +1,6 @@
 package users
 
 import (
-	"fmt"
-
 	"github.com/jackc/pgx/v5"
 )
 
@@ -18,7 +16,7 @@ func ScanUser(r pgx.Row) (*User, error) {
 	u := &User{}
 
 	if err := r.Scan(&u.Id, &u.Name, &u.Email, &u.Password); err != nil {
-		return nil, fmt.Errorf("Failed to scan a user: %w", err)
+		return nil, err
 	}
 
 	return u, nil

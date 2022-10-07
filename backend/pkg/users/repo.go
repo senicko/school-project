@@ -8,17 +8,17 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type UserRepo struct {
+type Repo struct {
 	dbPool *pgxpool.Pool
 }
 
-func NewUserRepo(dbPool *pgxpool.Pool) *UserRepo {
-	return &UserRepo{
+func NewRepo(dbPool *pgxpool.Pool) *Repo {
+	return &Repo{
 		dbPool: dbPool,
 	}
 }
 
-func (r UserRepo) CreateUser(ctx context.Context, u User) (*User, error) {
+func (r Repo) CreateUser(ctx context.Context, u User) (*User, error) {
 	row := r.dbPool.QueryRow(ctx, "INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *", u.Name, u.Email, u.Password)
 
 	user, err := ScanUser(row)
@@ -29,18 +29,15 @@ func (r UserRepo) CreateUser(ctx context.Context, u User) (*User, error) {
 	return user, nil
 }
 
-func (r UserRepo) FindByEmail(ctx context.Context, e string) (*User, error) {
+func (r Repo) FindByEmail(ctx context.Context, e string) (*User, error) {
 	row := r.dbPool.QueryRow(ctx, "SELECT * FROM users WHERE email=$1", e)
-
-	fmt.Println(row)
 
 	u, err := ScanUser(row)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return nil, nil
 		}
-
-		return nil, fmt.Errorf("Failed to query by email: %w", err)
+		return nil, fmt.Errorf("failed to scan the user: %w", err)
 	}
 
 	return u, nil

@@ -47,12 +47,12 @@ func main() {
 
 	r.Use(middleware.Logger)
 
-	// register user repo
-	userRepo := users.NewUserRepo(dbPool)
-	userHandlers := users.NewUserHandlers(userRepo)
+	userRepo := users.NewRepo(dbPool)
+	userService := users.NewService(userRepo)
+	userHandlers := users.NewHandler(userService)
+	r.Route("/users", userHandlers.Routes)
 
-	r.Post("/users", userHandlers.RegisterUser)
-
+	// start
 	fmt.Println("Server starting http://localhost:3000")
 
 	if err := http.ListenAndServe(":3000", r); err != nil {
