@@ -5,7 +5,7 @@ import (
 )
 
 type User struct {
-	Id       int    `json:"id"`
+	ID       int    `json:"id"`
 	Name     string `json:"name"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
@@ -15,7 +15,7 @@ type User struct {
 func ScanUser(r pgx.Row) (*User, error) {
 	u := &User{}
 
-	if err := r.Scan(&u.Id, &u.Name, &u.Email, &u.Password); err != nil {
+	if err := r.Scan(&u.ID, &u.Name, &u.Email, &u.Password); err != nil {
 		return nil, err
 	}
 

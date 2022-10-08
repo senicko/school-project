@@ -23,7 +23,6 @@ func NewService(userRepo *Repo) *Service {
 }
 
 func (s Service) Register(ctx context.Context, u User) (*User, error) {
-	// Check if emails isn't already taken
 	candidate, err := s.userRepo.FindByEmail(ctx, u.Email)
 	if err != nil {
 		return nil, fmt.Errorf("find by email failed: %w", err)
@@ -33,7 +32,6 @@ func (s Service) Register(ctx context.Context, u User) (*User, error) {
 		return nil, ErrEmailAlreadyTaken
 	}
 
-	// hash password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, fmt.Errorf("failed to hash the password: %w", err)
@@ -41,7 +39,6 @@ func (s Service) Register(ctx context.Context, u User) (*User, error) {
 
 	u.Password = string(hashedPassword)
 
-	// create user
 	created, err := s.userRepo.CreateUser(ctx, u)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create the user: %w", err)

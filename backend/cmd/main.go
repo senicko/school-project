@@ -9,12 +9,14 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"github.com/go-redis/redis/v8"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
+	"github.com/senicko/school-project-backend/pkg/session"
 	"github.com/senicko/school-project-backend/pkg/users"
 )
 
-func connectToDatabase() (*pgxpool.Pool, error) {
+func initDatabase() (*pgxpool.Pool, error) {
 	dbPool, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
 
 	if err != nil {
@@ -28,28 +30,44 @@ func connectToDatabase() (*pgxpool.Pool, error) {
 	return dbPool, nil
 }
 
+func initRedis() (*redis.Client, error) {
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     os.Getenv("REDIS_URL"),
+		Password: "",
+		DB:       0,
+	})
+
+	if _, err := redisClient.Ping(redisClient.Context()).Result(); err != nil {
+		return nil, err
+	}
+
+	return redisClient, nil
+}
+
 func main() {
-	// load .env
 	if err := godotenv.Load(); err != nil {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
 
-	// connect with database
-	dbPool, err := connectToDatabase()
-	defer dbPool.Close()
-
+	redisClient, err := initRedis()
 	if err != nil {
-		log.Fatalf("Failed to connect with database: %v", err)
+		log.Fatalf("failed to init redis client: %v", err)
 	}
 
-	// init chi router
-	r := chi.NewRouter()
+	dbPool, err := initDatabase()
+	defer dbPool.Close()
+	if err != nil {
+		log.Fatalf("failed to connect with database: %v", err)
+	}
 
+	sessionManager := session.NewManager(redisClient)
+
+	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
 	userRepo := users.NewRepo(dbPool)
 	userService := users.NewService(userRepo)
-	userHandlers := users.NewHandler(userService)
+	userHandlers := users.NewHandler(userService, sessionManager)
 	r.Route("/users", userHandlers.Routes)
 
 	// start

@@ -8,15 +8,18 @@ import (
 	"os"
 
 	"github.com/go-chi/chi"
+	"github.com/senicko/school-project-backend/pkg/session"
 )
 
 type Handler struct {
-	userService *Service
+	userService    *Service
+	sessionManager *session.Manager
 }
 
-func NewHandler(userService *Service) *Handler {
+func NewHandler(userService *Service, sessionManager *session.Manager) *Handler {
 	return &Handler{
-		userService: userService,
+		userService:    userService,
+		sessionManager: sessionManager,
 	}
 }
 
@@ -49,6 +52,14 @@ func (h Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
+	sID, err := h.sessionManager.CreateSession(ctx, user.ID)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "failed to create session: %v", err)
+	}
+
+	// For now just print the session id to the console
+	fmt.Println(sID)
 
 	body, err := json.Marshal(user)
 	if err != nil {
