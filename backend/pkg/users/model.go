@@ -7,6 +7,12 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+// LoginCredentials represents data required for logging in.
+type LoginCredentials struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 type User struct {
 	ID       int    `json:"id"`
 	Name     string `json:"name"`
@@ -14,8 +20,8 @@ type User struct {
 	Password string `json:"password,omitempty"`
 }
 
-func (u User) Serialize() ([]byte, error) {
-	// We want to exclude password
+// Json serializes user to json and removes sensitive information like password.
+func (u User) Json() ([]byte, error) {
 	u.Password = ""
 
 	uJson, err := json.Marshal(u)
@@ -26,8 +32,8 @@ func (u User) Serialize() ([]byte, error) {
 	return uJson, nil
 }
 
-// ScanUser scans query row into User struct.
-func ScanUser(r pgx.Row) (*User, error) {
+// Scans query row into User struct.
+func Scan(r pgx.Row) (*User, error) {
 	u := &User{}
 
 	if err := r.Scan(&u.ID, &u.Name, &u.Email, &u.Password); err != nil {
