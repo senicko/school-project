@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/cors"
 	"github.com/go-redis/redis/v8"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
@@ -63,7 +64,12 @@ func main() {
 	sessionManager := session.NewManager(redisClient)
 
 	r := chi.NewRouter()
+
 	r.Use(middleware.Logger)
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:5173"},
+		AllowCredentials: true,
+	}))
 
 	userRepo := users.NewRepo(dbPool)
 	userService := users.NewService(userRepo)

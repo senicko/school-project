@@ -8,3 +8,9 @@ CREATE TABLE users (
   email TEXT NOT NULL UNIQUE,
   password TEXT NOT NULL
 );
+
+CREATE TABLE word_set (
+  id SERIAL PRIMARY KEY,
+  title TEXT NOT NULL,
+  words JSON NOT NULL
+);

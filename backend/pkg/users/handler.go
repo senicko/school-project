@@ -3,9 +3,8 @@ package users
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
-	"os"
+	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/senicko/school-project-backend/pkg/session"
@@ -25,50 +24,83 @@ func NewHandler(userService *Service, sessionManager *session.Manager) *Handler 
 
 func (h Handler) Routes(r chi.Router) {
 	r.Post("/", h.RegisterUser)
+	r.Get("/me", h.Me)
 }
 
 func (h Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	// decode request body
 	credentials := User{}
 
 	if err := json.NewDecoder(r.Body).Decode(&credentials); err != nil {
-		fmt.Fprintf(os.Stderr, "failed to parse incoming body: %v\n", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	user, err := h.userService.Register(ctx, credentials)
+	u, err := h.userService.Register(ctx, credentials)
 	if err != nil {
 		if errors.Is(err, ErrEmailAlreadyTaken) {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprint(w, "{\"message\":\"This email is already taken\"}")
 			return
 		}
 
-		fmt.Fprintf(os.Stderr, "failed to register: %v\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	sID, err := h.sessionManager.CreateSession(ctx, user.ID)
+	sID, err := h.sessionManager.CreateSession(ctx, u.ID)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to create session: %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
-	// For now just print the session id to the console
-	fmt.Println(sID)
+	http.SetCookie(w, &http.Cookie{
+		Name:     "sid",
+		Value:    sID,
+		Expires:  time.Now().Add(time.Hour * 24 * 14),
+		HttpOnly: true,
+	})
 
-	body, err := json.Marshal(user)
+	body, err := u.Serialize()
 	if err != nil {
-		fmt.Fprint(os.Stderr, err)
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
+	w.Write(body)
+}
+
+func (h Handler) Me(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	sID, err := r.Cookie("sid")
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	s, err := h.sessionManager.ReadSession(ctx, sID.Value)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	u, err := h.userService.userRepo.FindById(ctx, s.UID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	body, err := u.Serialize()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	w.Write(body)
 }
