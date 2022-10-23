@@ -9,8 +9,10 @@ CREATE TABLE users (
   password TEXT NOT NULL
 );
 
-CREATE TABLE word_set (
+CREATE TABLE word_sets (
   id SERIAL PRIMARY KEY,
   title TEXT NOT NULL,
-  words JSON NOT NULL
+  words JSON NOT NULL,
+  user_id INT NOT NULL,
+  CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(id)
 );

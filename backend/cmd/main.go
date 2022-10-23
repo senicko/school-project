@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -11,26 +10,14 @@ import (
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/cors"
 	"github.com/go-redis/redis/v8"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
+	"github.com/senicko/school-project-backend/pkg/postgres"
+	"github.com/senicko/school-project-backend/pkg/rest"
+	"github.com/senicko/school-project-backend/pkg/service"
 	"github.com/senicko/school-project-backend/pkg/session"
-	"github.com/senicko/school-project-backend/pkg/users"
 )
 
-func initDatabase() (*pgxpool.Pool, error) {
-	dbPool, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
-
-	if err != nil {
-		return nil, err
-	}
-
-	if err := dbPool.Ping(context.Background()); err != nil {
-		return nil, err
-	}
-
-	return dbPool, nil
-}
-
+// initRedis initializes redis connection.
 func initRedis() (*redis.Client, error) {
 	redisClient := redis.NewClient(&redis.Options{
 		Addr:     os.Getenv("REDIS_URL"),
@@ -46,16 +33,19 @@ func initRedis() (*redis.Client, error) {
 }
 
 func main() {
+	// Load .env file
 	if err := godotenv.Load(); err != nil {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
 
+	// connect to redis
 	redisClient, err := initRedis()
 	if err != nil {
 		log.Fatalf("failed to init redis client: %v", err)
 	}
 
-	dbPool, err := initDatabase()
+	// connect to postgres
+	dbPool, err := postgres.Connect()
 	defer dbPool.Close()
 	if err != nil {
 		log.Fatalf("failed to connect with database: %v", err)
@@ -63,22 +53,37 @@ func main() {
 
 	sessionManager := session.NewManager(redisClient)
 
+	// Create new router & register middlewares
 	r := chi.NewRouter()
-
 	r.Use(middleware.Logger)
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:5173"},
 		AllowCredentials: true,
 	}))
 
-	userRepo := users.NewRepo(dbPool)
-	userService := users.NewService(userRepo)
-	userHandlers := users.NewHandler(userService, sessionManager)
-	r.Route("/users", userHandlers.Routes)
+	// Register user controller
+	userRepo := postgres.NewUserRepo(dbPool)
+	userService := service.NewUserService(userRepo, sessionManager)
+	userController := rest.NewUserController(userService, sessionManager)
 
-	// start
+	r.Route("/users", func(r chi.Router) {
+		r.Post("/login", userController.Login)
+		r.Post("/register", userController.Register)
+		r.Get("/me", userController.Me)
+	})
+
+	// Register word set controller
+	wordSetRepo := postgres.NewWordSetRepo(dbPool)
+	wordSetService := service.NewWordSetService()
+	wordSetController := rest.NewWordSetController(userService, wordSetRepo, wordSetService)
+
+	r.Route("/word-set", func(r chi.Router) {
+		r.Post("/", wordSetController.Create)
+		r.Get("/", wordSetController.GetAll)
+	})
+
+	// Start the server
 	fmt.Println("Server starting http://localhost:3000")
-
 	if err := http.ListenAndServe(":3000", r); err != nil {
 		panic("Failed to start the server")
 	}
