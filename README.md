@@ -1,4 +1,8 @@
+
+
 # School project
+
+Aplikacja pozwalająca na uczenie się w prostszy sposób.
 
 `backend` - server written in go
 
