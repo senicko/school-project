@@ -1,12 +1,10 @@
 import { WordSetList } from "../components/word-set/word-set-list";
-import { useAuth } from "../context/auth";
+import { Header } from "../components/header";
 
 export const Root = () => {
-  const { user } = useAuth();
-
   return (
     <div>
-      <section>Hello, {user?.name}</section>
+      <Header />
       <WordSetList />
     </div>
   );

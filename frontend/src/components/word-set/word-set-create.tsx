@@ -1,12 +1,27 @@
-import { WordSetEntry } from "../../types";
+import { WordSetEntry, WordSet, WordSetCreateData } from "../../types";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useNavigate, useNavigation } from "react-router-dom";
 
 type WordInputProps = {
   onSubmit: (wordSetEntry: WordSetEntry) => void;
 };
 
-export const WordInput = ({ onSubmit }: WordInputProps) => {
+/**
+ * createWordSet sends a new word set to the api.
+ */
+const createWordSet = async (wordSet: WordSetCreateData) => {
+  const res = await fetch("http://localhost:3000/word-set", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(wordSet),
+  });
+};
+
+const WordInput = ({ onSubmit }: WordInputProps) => {
   const { handleSubmit, register } = useForm<WordSetEntry>();
 
   return (
@@ -31,20 +46,37 @@ export const WordInput = ({ onSubmit }: WordInputProps) => {
 };
 
 export const WordSetCreate = () => {
+  const navigate = useNavigate();
   const [wordSetEntries, setWordSetEntries] = useState<WordSetEntry[]>([]);
+  const [title, setTitel] = useState("");
+
+  /**
+   * addWordSet creates a new word set and navigates the user to the home page.
+   */
+  const addWordSet = async () => {
+    await createWordSet({
+      title: "Test Word Set",
+      words: wordSetEntries,
+    });
+
+    navigate("/");
+  };
 
   return (
     <section>
-      {wordSetEntries.map(({ word, meaning }) => (
-        <div key={word}>
-          {word} = {meaning}
-        </div>
-      ))}
+      <button className="" onClick={addWordSet}>
+        Create Word Set
+      </button>
       <WordInput
         onSubmit={(wordSetEntry) =>
           setWordSetEntries([...wordSetEntries, wordSetEntry])
         }
       />
+      {wordSetEntries.map(({ word, meaning }) => (
+        <div key={word}>
+          {word} = {meaning}
+        </div>
+      ))}
     </section>
   );
 };

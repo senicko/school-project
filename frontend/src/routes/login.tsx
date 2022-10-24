@@ -42,19 +42,20 @@ export const Login = () => {
   const {
     handleSubmit,
     register,
-    formState: { errors, isValid },
+    formState: { errors },
   } = useForm<LoginCredentials>({
     resolver: zodResolver(loginCredentialsSchema),
   });
 
+  /**
+   * Login user handler.
+   */
   const onSubmit = handleSubmit(async (data) => {
     const user = await loginUser(data);
+    if (!user) return;
 
-    if (user) {
-      setUser(user);
-      navigate("/");
-      return;
-    }
+    setUser(user);
+    navigate("/");
   });
 
   return (

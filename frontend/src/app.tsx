@@ -8,6 +8,7 @@ import { ProtectedRoute } from "./components/protected";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AddWordSet } from "./routes/add-word-set";
 import { Unauthorized } from "./components/unauthorized";
+import { WordSetPreview } from "./components/word-set/word-set-preview";
 
 const router = createBrowserRouter([
   {

@@ -38,7 +38,6 @@ const getCurrentUser = async () => {
  */
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // TODO: Does it make sense to use react query here?
-
   const [user, setUser] = useState<User>();
   const [isLoading, setIsLoading] = useState(true);
   const value = useMemo(() => ({ user, setUser }), [user]);

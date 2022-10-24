@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { json } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { WordSet } from "../../types";
 import { WordSetPreview } from "./word-set-preview";
 
@@ -14,6 +14,16 @@ const getWordSets = async (): Promise<WordSet[]> => {
 
   return await res.json();
 };
+
+type WordSetCardProps = {
+  wordSet: WordSet;
+};
+
+// TODO: This will be a word set card that moves user to the word set page.
+// const WordSetCard = ({ wordSet }: WordSetCardProps) => {
+//   const navigate = useNavigate();
+//   return <div onClick={() => navigate(`/${wordSet.id}`)}>{wordSet.title}</div>;
+// };
 
 /**
  * WordSetList is a component that renders all word sets created by the currently logged in user.
@@ -32,7 +42,7 @@ export const WordSetList = () => {
     <section>
       {wordSetsQuery.data &&
         wordSetsQuery.data.map((wordSet) => (
-          <WordSetPreview wordSet={wordSet} />
+          <WordSetPreview key={wordSet.id} wordSet={wordSet} />
         ))}
     </section>
   );

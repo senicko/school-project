@@ -8,3 +8,5 @@ export type WordSet = {
   title: string;
   words: WordSetEntry[];
 };
+
+export type WordSetCreateData = Pick<WordSet, "title" | "words">;

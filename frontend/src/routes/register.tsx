@@ -54,16 +54,19 @@ export const Register = () => {
     resolver: zodResolver(registerCredentialsSchema),
   });
 
+  /**
+   * Register user handler.
+   */
   const onSubmit = handleSubmit(async (data) => {
     const user = await registerUser(data);
 
-    if (user) {
-      setUser(user);
-      navigate("/");
+    if (!user) {
+      setSubmitError("Could not register right now. Try again later.");
       return;
     }
 
-    setSubmitError("Could not register right now. Try again later.");
+    setUser(user);
+    navigate("/");
   });
 
   return (
@@ -80,6 +83,7 @@ export const Register = () => {
               type="text"
               id="name"
               placeholder="Enter your name"
+              autoComplete="off"
               {...register("name")}
             />
             {errors.name && (
