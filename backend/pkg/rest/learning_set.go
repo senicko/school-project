@@ -8,22 +8,22 @@ import (
 	"github.com/senicko/school-project-backend/pkg/service"
 )
 
-type WordSetController struct {
-	userService    *service.UserService
-	wordSetRepo    app.WordSetRepo
-	wordSetService app.WordSetService
+type LearningSetController struct {
+	userService        *service.UserService
+	learningSetRepo    app.LearningSetRepo
+	learningSetService app.LearningSetService
 }
 
-func NewWordSetController(userService *service.UserService, wordSetRepo app.WordSetRepo, wordSetService app.WordSetService) *WordSetController {
-	return &WordSetController{
-		userService:    userService,
-		wordSetRepo:    wordSetRepo,
-		wordSetService: wordSetService,
+func NewLearningSetController(userService *service.UserService, learningSetRepo app.LearningSetRepo, learningSetService app.LearningSetService) *LearningSetController {
+	return &LearningSetController{
+		userService:        userService,
+		learningSetRepo:    learningSetRepo,
+		learningSetService: learningSetService,
 	}
 }
 
 // Create is a rest handler for creating a new word set.
-func (wsc WordSetController) Create(w http.ResponseWriter, r *http.Request) {
+func (lsc LearningSetController) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	// Get session ID
@@ -34,30 +34,30 @@ func (wsc WordSetController) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get current user
-	user, err := wsc.userService.CurrentUser(ctx, sID.Value)
+	user, err := lsc.userService.CurrentUser(ctx, sID.Value)
 	if err != nil {
 		HandleError(w, NewHttpError(err, http.StatusUnauthorized, ""))
 		return
 	}
 
 	// Read request body
-	var wordSet app.WordSet
-	if err := json.NewDecoder(r.Body).Decode(&wordSet); err != nil {
+	var learningSet app.LearningSet
+	if err := json.NewDecoder(r.Body).Decode(&learningSet); err != nil {
 		HandleError(w, NewHttpError(err, http.StatusInternalServerError, ""))
 		return
 	}
 
-	wordSet.UserID = user.ID
+	learningSet.UserID = user.ID
 
 	// Create a new wordset
-	created, err := wsc.wordSetRepo.Create(ctx, wordSet)
+	created, err := lsc.learningSetRepo.Create(ctx, learningSet)
 	if err != nil {
 		HandleError(w, NewHttpError(err, http.StatusInternalServerError, ""))
 		return
 	}
 
 	// Write response body
-	body, err := wsc.wordSetService.Serialize(*created)
+	body, err := lsc.learningSetService.Serialize(*created)
 	if err != nil {
 		HandleError(w, NewHttpError(err, http.StatusInternalServerError, ""))
 		return
@@ -68,7 +68,8 @@ func (wsc WordSetController) Create(w http.ResponseWriter, r *http.Request) {
 	w.Write(body)
 }
 
-func (wsc WordSetController) GetAll(w http.ResponseWriter, r *http.Request) {
+// GetAll is a rest endpoint for retrieving all word sets
+func (lsc LearningSetController) GetAll(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	// Get session ID
@@ -79,21 +80,21 @@ func (wsc WordSetController) GetAll(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get current user
-	user, err := wsc.userService.CurrentUser(ctx, sID.Value)
+	user, err := lsc.userService.CurrentUser(ctx, sID.Value)
 	if err != nil {
 		HandleError(w, NewHttpError(err, http.StatusUnauthorized, ""))
 		return
 	}
 
 	// Get all word sets
-	wordSets, err := wsc.wordSetRepo.GetAll(ctx, user.ID)
+	wordSets, err := lsc.learningSetRepo.GetAll(ctx, user.ID)
 	if err != nil {
 		HandleError(w, NewHttpError(err, http.StatusInternalServerError, ""))
 		return
 	}
 
 	// Write response body
-	body, err := wsc.wordSetService.SerializeMany(wordSets)
+	body, err := lsc.learningSetService.SerializeMany(wordSets)
 	if err != nil {
 		HandleError(w, NewHttpError(err, http.StatusInternalServerError, ""))
 		return

@@ -1,17 +1,17 @@
-import { WordSetEntry, WordSet, WordSetCreateData } from "../../types";
+import { Definition, LearningSetCreateData } from "../../types";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate, useNavigation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 type WordInputProps = {
-  onSubmit: (wordSetEntry: WordSetEntry) => void;
+  onSubmit: (definition: Definition) => void;
 };
 
 /**
- * createWordSet sends a new word set to the api.
+ * createLearningSet sends a new word set to the api.
  */
-const createWordSet = async (wordSet: WordSetCreateData) => {
-  const res = await fetch("http://localhost:3000/word-set", {
+const createLearningSet = async (wordSet: LearningSetCreateData) => {
+  await fetch("http://localhost:3000/word-set", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -22,7 +22,7 @@ const createWordSet = async (wordSet: WordSetCreateData) => {
 };
 
 const WordInput = ({ onSubmit }: WordInputProps) => {
-  const { handleSubmit, register } = useForm<WordSetEntry>();
+  const { handleSubmit, register } = useForm<Definition>();
 
   return (
     <div className="flex gap-2">
@@ -45,18 +45,17 @@ const WordInput = ({ onSubmit }: WordInputProps) => {
   );
 };
 
-export const WordSetCreate = () => {
+export const LearningSetCreate = () => {
   const navigate = useNavigate();
-  const [wordSetEntries, setWordSetEntries] = useState<WordSetEntry[]>([]);
-  const [title, setTitel] = useState("");
+  const [definitions, setDefinitions] = useState<Definition[]>([]);
 
   /**
-   * addWordSet creates a new word set and navigates the user to the home page.
+   * addLearningSet creates a new word set and navigates the user to the home page.
    */
-  const addWordSet = async () => {
-    await createWordSet({
+  const addLearningSet = async () => {
+    await createLearningSet({
       title: "Test Word Set",
-      words: wordSetEntries,
+      words: definitions,
     });
 
     navigate("/");
@@ -64,15 +63,16 @@ export const WordSetCreate = () => {
 
   return (
     <section>
-      <button className="" onClick={addWordSet}>
-        Create Word Set
+      <button
+        className="p-4 bg-blue-500 rounded-lg text-white"
+        onClick={addLearningSet}
+      >
+        Create
       </button>
       <WordInput
-        onSubmit={(wordSetEntry) =>
-          setWordSetEntries([...wordSetEntries, wordSetEntry])
-        }
+        onSubmit={(definition) => setDefinitions([...definitions, definition])}
       />
-      {wordSetEntries.map(({ word, meaning }) => (
+      {definitions.map(({ word, meaning }) => (
         <div key={word}>
           {word} = {meaning}
         </div>

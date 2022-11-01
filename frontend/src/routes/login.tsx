@@ -116,12 +116,14 @@ export const Login = () => {
           Log in
         </button>
       </form>
-      <p className="text-sm text-gray-600">
-        Don't have an account yet?{" "}
-        <Link className="text-blue-500" to="/register">
-          Register here.
-        </Link>
-      </p>
+      <footer>
+        <p className="text-sm text-gray-600">
+          Don't have an account yet?{" "}
+          <Link className="text-blue-500" to="/register">
+            Register here.
+          </Link>
+        </p>
+      </footer>
     </main>
   );
 };

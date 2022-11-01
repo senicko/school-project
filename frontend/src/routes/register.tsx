@@ -149,12 +149,14 @@ export const Register = () => {
           )}
         </div>
       </form>
-      <p className="text-sm text-gray-600">
-        Already have an account?{" "}
-        <Link className="text-blue-500" to="/login">
-          Login here.
-        </Link>
-      </p>
+      <footer>
+        <p className="text-sm text-gray-600">
+          Already have an account?{" "}
+          <Link className="text-blue-500" to="/login">
+            Login here.
+          </Link>
+        </p>
+      </footer>
     </main>
   );
 };

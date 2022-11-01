@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"errors"
+	"time"
 )
 
 type User struct {
@@ -36,20 +37,21 @@ type WordSetEntry struct {
 	Meaning string `json:"meaning"`
 }
 
-type WordSet struct {
-	ID     int            `json:"id"`
-	Title  string         `json:"title"`
-	Words  []WordSetEntry `json:"words"`
-	UserID int            `json:"userId,omitempty"`
+type LearningSet struct {
+	ID            int            `json:"id"`
+	Title         string         `json:"title"`
+	Words         []WordSetEntry `json:"words"`
+	RecentlyOpend time.Time      `json:"recentlyOpened"`
+	UserID        int            `json:"userId,omitempty"`
 }
 
 // WordSetRepo is an interface that must be implemented by a WordSetRepo
-type WordSetRepo interface {
-	Create(ctx context.Context, wordSet WordSet) (*WordSet, error)
-	GetAll(ctx context.Context, userID int) ([]WordSet, error)
+type LearningSetRepo interface {
+	Create(ctx context.Context, learningSet LearningSet) (*LearningSet, error)
+	GetAll(ctx context.Context, userID int) ([]LearningSet, error)
 }
 
-type WordSetService interface {
-	Serialize(wordSet WordSet) ([]byte, error)
-	SerializeMany(wordSets []WordSet) ([]byte, error)
+type LearningSetService interface {
+	Serialize(wordSet LearningSet) ([]byte, error)
+	SerializeMany(wordSets []LearningSet) ([]byte, error)
 }

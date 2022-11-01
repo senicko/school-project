@@ -1,11 +1,12 @@
-import { WordSetList } from "../components/word-set/word-set-list";
+import { LearningSetsList } from "../components/learning-set/learning-sets-list";
 import { Header } from "../components/header";
+import { CenterLayout } from "../components/center-layout";
 
 export const Root = () => {
   return (
-    <div>
+    <CenterLayout>
       <Header />
-      <WordSetList />
-    </div>
+      <LearningSetsList />
+    </CenterLayout>
   );
 };

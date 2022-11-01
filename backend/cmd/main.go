@@ -73,13 +73,13 @@ func main() {
 	})
 
 	// Register word set controller
-	wordSetRepo := postgres.NewWordSetRepo(dbPool)
-	wordSetService := service.NewWordSetService()
-	wordSetController := rest.NewWordSetController(userService, wordSetRepo, wordSetService)
+	learningSetRepo := postgres.NewLearningSetRepo(dbPool)
+	learningSetService := service.NewLearningSetService()
+	learningSetController := rest.NewLearningSetController(userService, learningSetRepo, learningSetService)
 
 	r.Route("/word-set", func(r chi.Router) {
-		r.Post("/", wordSetController.Create)
-		r.Get("/", wordSetController.GetAll)
+		r.Post("/", learningSetController.Create)
+		r.Get("/", learningSetController.GetAll)
 	})
 
 	// Start the server

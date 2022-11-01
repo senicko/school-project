@@ -121,6 +121,11 @@ func (uc UserController) Me(w http.ResponseWriter, r *http.Request) {
 
 	user, err := uc.userService.CurrentUser(ctx, sID.Value)
 	if err != nil {
+		if err == session.ErrSessionNotFound {
+			HandleError(w, NewHttpError(err, http.StatusUnauthorized, ""))
+			return
+		}
+
 		HandleError(w, NewHttpError(err, http.StatusInternalServerError, ""))
 		return
 	}

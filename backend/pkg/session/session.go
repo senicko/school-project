@@ -3,11 +3,16 @@ package session
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
+)
+
+var (
+	ErrSessionNotFound = errors.New("session not found")
 )
 
 type Session struct {
@@ -48,7 +53,7 @@ func (m Manager) ReadSession(ctx context.Context, sID string) (*Session, error) 
 
 	if err != nil {
 		if err == redis.Nil {
-			return nil, nil
+			return nil, ErrSessionNotFound
 		}
 		return nil, fmt.Errorf("redis query failed: %w", err)
 	}

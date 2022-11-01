@@ -1,12 +1,12 @@
-export type WordSetEntry = {
+export type Definition = {
   word: string;
   meaning: string;
 };
 
-export type WordSet = {
+export type LearningSet = {
   id: number;
   title: string;
-  words: WordSetEntry[];
+  words: Definition[];
 };
 
-export type WordSetCreateData = Pick<WordSet, "title" | "words">;
+export type LearningSetCreateData = Pick<LearningSet, "title" | "words">;

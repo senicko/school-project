@@ -1,17 +1,19 @@
 import { useAuth } from "../context/auth";
+import ProfileImage from "../assets/profile.png";
 
 export const Header = () => {
   const { user } = useAuth();
 
   return (
-    <nav className="p-4 flex gap-4">
-      <div className="flex gap-2 items-center">
-        <div className="w-8 h-8 border border-gray-300 rounded-full bg-gray-100"></div>
-        <span className="text-gray-900">{user?.name}</span>
+    <nav className="flex items-center gap-4 justify-between">
+      <div className="flex gap-4 items-center">
+        <img
+          src={ProfileImage}
+          alt="profile image"
+          className="rounded-full aspect-square w-[48px] border border-gray-800"
+        />
+        <span className="text-gray-800">{user?.name}</span>
       </div>
-      <span>
-        Today is {new Intl.DateTimeFormat("en-US").format(new Date())}
-      </span>
     </nav>
   );
 };

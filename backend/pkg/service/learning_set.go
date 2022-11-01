@@ -7,16 +7,16 @@ import (
 	"github.com/senicko/school-project-backend/pkg/app"
 )
 
-type WordSetService struct {
+type LearningSetService struct {
 }
 
-func NewWordSetService() *WordSetService {
-	return &WordSetService{}
+func NewLearningSetService() *LearningSetService {
+	return &LearningSetService{}
 }
 
 // Serialize serializes a word set into json object.
 // It removes unnecessary fields like UserID.
-func (wss WordSetService) Serialize(wordSet app.WordSet) ([]byte, error) {
+func (lss LearningSetService) Serialize(wordSet app.LearningSet) ([]byte, error) {
 	wordSet.UserID = 0
 
 	wordSetJson, err := json.Marshal(wordSet)
@@ -27,7 +27,7 @@ func (wss WordSetService) Serialize(wordSet app.WordSet) ([]byte, error) {
 	return wordSetJson, nil
 }
 
-func (wss WordSetService) SerializeMany(wordSets []app.WordSet) ([]byte, error) {
+func (lss LearningSetService) SerializeMany(wordSets []app.LearningSet) ([]byte, error) {
 	for _, wordSet := range wordSets {
 		wordSet.UserID = 0
 	}
