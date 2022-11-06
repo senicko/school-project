@@ -1,8 +1,8 @@
-import { useAuth } from "../context/auth";
 import ProfileImage from "../assets/profile.png";
+import { useUserStore } from "../state/user";
 
 export const Header = () => {
-  const { user } = useAuth();
+  const user = useUserStore((state) => state.user);
 
   return (
     <nav className="flex items-center gap-4 justify-between">

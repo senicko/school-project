@@ -6,7 +6,6 @@ import { Root } from "./routes/root";
 import { AuthProvider } from "./context/auth";
 import { ProtectedRoute } from "./components/protected";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AddWordSet } from "./routes/add-learning-set";
 import { Unauthorized } from "./components/unauthorized";
 
 const router = createBrowserRouter([
@@ -18,14 +17,6 @@ const router = createBrowserRouter([
       </ProtectedRoute>
     ),
     errorElement: <ErrorPage />,
-  },
-  {
-    path: "/add",
-    element: (
-      <ProtectedRoute>
-        <AddWordSet />
-      </ProtectedRoute>
-    ),
   },
   {
     path: "/register",

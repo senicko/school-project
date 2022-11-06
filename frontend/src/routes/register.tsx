@@ -1,5 +1,5 @@
 import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from "../context/auth";
+import { useUserStore } from "../state/user";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -45,7 +45,7 @@ const registerUser = async (data: RegisterCredentials) => {
 export const Register = () => {
   const navigate = useNavigate();
   const [submitError, setSubmitError] = useState<string>();
-  const { setUser } = useAuth();
+  const setUser = useUserStore((state) => state.setUser);
   const {
     register,
     handleSubmit,

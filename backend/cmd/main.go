@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -64,22 +65,33 @@ func main() {
 	// Register user controller
 	userRepo := postgres.NewUserRepo(dbPool)
 	userService := service.NewUserService(userRepo, sessionManager)
-	userController := rest.NewUserController(userService, sessionManager)
+	userController := rest.NewUserController(userRepo, userService, sessionManager)
 
 	r.Route("/users", func(r chi.Router) {
 		r.Post("/login", userController.Login)
 		r.Post("/register", userController.Register)
+
 		r.Get("/me", userController.Me)
+		r.Post("/me/jokes", userController.SaveJoke)
 	})
 
-	// Register word set controller
-	learningSetRepo := postgres.NewLearningSetRepo(dbPool)
-	learningSetService := service.NewLearningSetService()
-	learningSetController := rest.NewLearningSetController(userService, learningSetRepo, learningSetService)
+	// api.yomomma.info proxy
+	r.Get("/joke", func(w http.ResponseWriter, r *http.Request) {
+		res, err := http.Get("https://api.yomomma.info")
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 
-	r.Route("/word-set", func(r chi.Router) {
-		r.Post("/", learningSetController.Create)
-		r.Get("/", learningSetController.GetAll)
+		body, err := io.ReadAll(res.Body)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(res.StatusCode)
+		w.Write(body)
 	})
 
 	// Start the server

@@ -1,8 +1,8 @@
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/auth";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useUserStore } from "../state/user";
 
 // Create validation schema for register credentials.
 const loginCredentialsSchema = z.object({
@@ -38,7 +38,7 @@ const loginUser = async (data: LoginCredentials) => {
 
 export const Login = () => {
   const navigate = useNavigate();
-  const { setUser } = useAuth();
+  const setUser = useUserStore((state) => state.setUser);
   const {
     handleSubmit,
     register,

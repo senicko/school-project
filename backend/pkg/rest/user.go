@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 
@@ -13,13 +14,15 @@ import (
 )
 
 type UserController struct {
+	userRepo       app.UserRepo
 	userService    app.UserService
 	sessionManager *session.Manager
 }
 
 // NewUserController creates a new UserController
-func NewUserController(userService app.UserService, sessionManager *session.Manager) *UserController {
+func NewUserController(userRepo app.UserRepo, userService app.UserService, sessionManager *session.Manager) *UserController {
 	return &UserController{
+		userRepo:       userRepo,
 		userService:    userService,
 		sessionManager: sessionManager,
 	}
@@ -121,7 +124,7 @@ func (uc UserController) Me(w http.ResponseWriter, r *http.Request) {
 
 	user, err := uc.userService.CurrentUser(ctx, sID.Value)
 	if err != nil {
-		if err == session.ErrSessionNotFound {
+		if errors.Is(err, session.ErrSessionNotFound) {
 			HandleError(w, NewHttpError(err, http.StatusUnauthorized, ""))
 			return
 		}
@@ -144,6 +147,42 @@ func (uc UserController) Me(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(body)
+}
+
+func (uc UserController) SaveJoke(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	sID, err := r.Cookie("sid")
+	if err != nil {
+		HandleError(w, NewHttpError(err, http.StatusBadRequest, "Missing session id cookie"))
+		return
+	}
+
+	user, err := uc.userService.CurrentUser(ctx, sID.Value)
+	if err != nil {
+		if errors.Is(err, session.ErrSessionNotFound) {
+			if errors.Is(err, session.ErrSessionNotFound) {
+				HandleError(w, NewHttpError(err, http.StatusUnauthorized, ""))
+				return
+			}
+
+			HandleError(w, NewHttpError(err, http.StatusInternalServerError, ""))
+			return
+		}
+	}
+
+	jokeBytes, err := io.ReadAll(r.Body)
+	if err != nil {
+		HandleError(w, NewHttpError(err, http.StatusInternalServerError, ""))
+		return
+	}
+
+	if err := uc.userRepo.SaveJoke(ctx, user.ID, string(jokeBytes)); err != nil {
+		HandleError(w, NewHttpError(err, http.StatusInternalServerError, ""))
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
 
 // newSession creates a new session for the given user id.
