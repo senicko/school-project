@@ -70,6 +70,7 @@ func main() {
 	r.Route("/users", func(r chi.Router) {
 		r.Post("/login", userController.Login)
 		r.Post("/register", userController.Register)
+		r.Get("/logout", userController.Logout)
 
 		r.Get("/me", userController.Me)
 		r.Post("/me/jokes", userController.SaveJoke)

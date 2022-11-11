@@ -3,6 +3,9 @@ import { BookmarkIcon as BookmarkIconOutline } from "@heroicons/react/24/outline
 import { BookmarkIcon as BookmarkIconSolid } from "@heroicons/react/24/solid";
 import { useUserStore } from "../../state/user";
 
+/**
+ * Represents object returned from api.yomomma.info api.
+ */
 type Joke = {
   joke: string;
 };
@@ -19,68 +22,72 @@ const fetchJoke = async (): Promise<Joke> => {
 /**
  * Saves the joke in user's joke collection.
  * @param joke joke that will be saved.
+ * @returns timestamp when the joke was saved.
  */
-const saveJoke = async (joke: string): Promise<void> => {
+const saveJoke = async (joke: string): Promise<number> => {
+  const savedAt = Date.now();
+
   await fetch("http://localhost:3000/users/me/jokes", {
     method: "POST",
     credentials: "include",
-    body: joke,
+    body: JSON.stringify({
+      content: joke,
+      savedAt,
+    }),
   });
+
+  return savedAt;
 };
 
 /**
  * JokesGenerator component fetches a joke every 10 seconds. It allows to save the joke if user is logged in.
  */
 export const JokesGenerator = () => {
+  // Get current user
   const user = useUserStore((state) => state.user);
+  // Get function for adding saved jokes to his list
   const addJoke = useUserStore((state) => state.addJoke);
 
+  // Joke generator state
   const [joke, setJoke] = useState("");
-  const [timer, setTimer] = useState(0);
+  const [timer, setTimer] = useState(10);
 
-  // jokeInterval
-  useEffect(() => {
-    fetchJoke().then(({ joke }) => {
-      setJoke(joke);
-      setTimer(10);
-    });
-
-    let timerInterval = setInterval(
-      () => setTimer((timer) => (timer > 1 ? timer - 1 : timer)),
-      1000
-    );
-
-    const jokeInterval = setInterval(() => {
-      fetchJoke().then(({ joke }) => {
-        setJoke(joke);
-        setTimer(10);
-
-        clearInterval(timerInterval);
-        timerInterval = setInterval(
-          () => setTimer((timer) => (timer > 1 ? timer - 1 : timer)),
-          1000
-        );
-      });
-    }, 10 * 1000);
-
-    return () => {
-      clearInterval(timerInterval);
-      clearInterval(jokeInterval);
-    };
-  }, []);
+  /**
+   * loadJoke fetches joke and replaces current joke with it.
+   */
+  const loadJoke = () => fetchJoke().then(({ joke }) => setJoke(joke));
 
   /**
    * bookmark saves the joke in user's collection.
    */
   const bookmark = async () => {
-    await saveJoke(joke);
-    addJoke(joke);
+    const savedAt = await saveJoke(joke);
+
+    addJoke({
+      content: joke,
+      savedAt,
+    });
   };
+
+  // useEffect that updates the timer
+  useEffect(() => {
+    let timerInterval = setInterval(
+      () => setTimer((timer) => (timer <= 1 ? 10 : timer - 1)),
+      1000
+    );
+
+    return () => clearInterval(timerInterval);
+  }, []);
+
+  // useEffect that fetches jokes when timer gets down to 0.
+  useEffect(() => {
+    if (timer == 10) loadJoke();
+  }, [timer]);
 
   return (
     <div className="flex flex-col items-center justify-center gap-8">
-      <div className="px-8 w-full flex justify-end">
-        {user && user.jokes.some((j) => j === joke) ? (
+      <div className="flex w-full justify-end px-8">
+        {user && user.jokes.some(({ content }) => content === joke) ? (
           <BookmarkIconSolid className="h-8 w-8 " />
         ) : (
           <BookmarkIconOutline
@@ -89,8 +96,8 @@ export const JokesGenerator = () => {
           />
         )}
       </div>
-      <span className="font-medium text-5xl text-center">{joke}</span>
-      <span className="italic text-3xl">next joke in {timer}</span>
+      <span className="text-center text-5xl font-medium">{joke}</span>
+      <span className="text-3xl italic">next joke in {timer}</span>
     </div>
   );
 };

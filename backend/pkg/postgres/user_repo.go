@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
@@ -39,8 +40,8 @@ func (ur UserRepo) FindByID(ctx context.Context, ID int) (*app.User, error) {
 }
 
 // SaveJoke saves a joke in user's joke collection.
-func (ur UserRepo) SaveJoke(ctx context.Context, userID int, joke string) error {
-	_, err := ur.dbPool.Exec(ctx, "UPDATE users SET jokes = ARRAY_APPEND(jokes, $1)", joke)
+func (ur UserRepo) SaveJoke(ctx context.Context, userID int, serializedJoke string) error {
+	_, err := ur.dbPool.Exec(ctx, "UPDATE users SET jokes = ARRAY_APPEND(jokes, $1)", serializedJoke)
 	if err != nil {
 		return fmt.Errorf("query failed: %w", err)
 	}
@@ -48,20 +49,27 @@ func (ur UserRepo) SaveJoke(ctx context.Context, userID int, joke string) error 
 	return nil
 }
 
-// FindJokes finds all jokes in user's collection.
-func (ur UserRepo) FindJokes(ctx context.Context, userID int) ([]string, error) {
-	return []string{}, nil
-}
-
 // scanUser scans query row into User struct.
 func scanUser(r pgx.Row) (*app.User, error) {
 	user := &app.User{}
 
-	if err := r.Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Jokes); err != nil {
+	serializedJokes := make([]string, 0)
+
+	if err := r.Scan(&user.ID, &user.Name, &user.Email, &user.Password, &serializedJokes); err != nil {
 		if err == pgx.ErrNoRows {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("failed to scan: %w", err)
+	}
+
+	user.Jokes = make([]app.Joke, 0)
+
+	for _, serializedJoke := range serializedJokes {
+		var joke app.Joke
+		if err := json.Unmarshal([]byte(serializedJoke), &joke); err != nil {
+			return nil, fmt.Errorf("failed to deserialize the joke: %w", err)
+		}
+		user.Jokes = append(user.Jokes, joke)
 	}
 
 	return user, nil

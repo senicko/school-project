@@ -70,7 +70,7 @@ export const Register = () => {
   });
 
   return (
-    <main className="flex flex-col h-screen justify-center items-center gap-16 p-8">
+    <main className="flex h-screen flex-col items-center justify-center gap-16 p-8">
       <h1 className="text-2xl text-gray-800">Create an account.</h1>
       <form onSubmit={onSubmit} className="flex flex-col gap-12" noValidate>
         <div className="flex flex-col gap-4">
@@ -79,7 +79,7 @@ export const Register = () => {
               Name
             </label>
             <input
-              className="border border-gray-200 rounded-lg p-3 w-[400px] text-gray-700 focus:outline-gray-300 placeholder:text-gray-300"
+              className="w-[400px] rounded-lg border border-gray-200 p-3 text-gray-700 placeholder:text-gray-300 focus:outline-gray-300"
               type="text"
               id="name"
               placeholder="Enter your name"
@@ -87,7 +87,7 @@ export const Register = () => {
               {...register("name")}
             />
             {errors.name && (
-              <span className="text-red-400 text-sm px-2 py-1 bg-red-50 border border-red-100 rounded-lg">
+              <span className="rounded-lg border border-red-100 bg-red-50 px-2 py-1 text-sm text-red-400">
                 {errors.name.message}
               </span>
             )}
@@ -97,14 +97,14 @@ export const Register = () => {
               Email
             </label>
             <input
-              className="border border-gray-200 rounded-lg p-3 w-[400px] text-gray-700 focus:outline-gray-300 placeholder:text-gray-300"
+              className="w-[400px] rounded-lg border border-gray-200 p-3 text-gray-700 placeholder:text-gray-300 focus:outline-gray-300"
               type="email"
               id="email"
               placeholder="Enter your email address"
               {...register("email")}
             />
             {errors.email && (
-              <span className="text-red-400 text-sm px-2 py-1 bg-red-50 border border-red-100 rounded-lg">
+              <span className="rounded-lg border border-red-100 bg-red-50 px-2 py-1 text-sm text-red-400">
                 {errors.email.message}
               </span>
             )}
@@ -114,22 +114,22 @@ export const Register = () => {
               Password
             </label>
             <input
-              className="border border-gray-200 rounded-lg p-3 w-[400px] text-gray-700 focus:outline-gray-300 placeholder:text-gray-300"
+              className="w-[400px] rounded-lg border border-gray-200 p-3 text-gray-700 placeholder:text-gray-300 focus:outline-gray-300"
               type="password"
               id="password"
               placeholder="Choose a password"
               {...register("password")}
             />
             {errors.password && (
-              <span className="text-red-400 text-sm px-2 py-1 bg-red-50 border border-red-100 rounded-lg">
+              <span className="rounded-lg border border-red-100 bg-red-50 px-2 py-1 text-sm text-red-400">
                 {errors.password.message}
               </span>
             )}
           </div>
-          <div className="flex justify-between items-center">
+          <div className="flex items-center justify-between">
             <div className="flex gap-2 py-2">
               <input id="remember" type="checkbox" />
-              <label className="text-gray-600 text-sm" htmlFor="remember">
+              <label className="text-sm text-gray-600" htmlFor="remember">
                 Remember me
               </label>
             </div>
@@ -138,12 +138,12 @@ export const Register = () => {
         <div className="flex flex-col gap-2">
           <button
             type="submit"
-            className="bg-blue-500 hover:bg-blue-600 transition p-3 text-white rounded-lg focus:outline-blue-600"
+            className="rounded-lg bg-blue-500 p-3 text-white transition hover:bg-blue-600 focus:outline-blue-600"
           >
             Continue
           </button>
           {submitError && (
-            <span className="text-red-400 text-sm px-2 py-1 bg-red-50 border border-red-100 rounded-lg">
+            <span className="rounded-lg border border-red-100 bg-red-50 px-2 py-1 text-sm text-red-400">
               {submitError}
             </span>
           )}

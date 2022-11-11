@@ -1,16 +1,21 @@
 import create from "zustand";
 import { persist, devtools } from "zustand/middleware";
 
+export type Joke = {
+  content: string;
+  savedAt: number;
+};
+
 export type User = {
   name: string;
   email: string;
-  jokes: string[];
+  jokes: Joke[];
 };
 
 export type UserState = {
   user?: User;
-  setUser: (user: User) => void;
-  addJoke: (joke: string) => void;
+  setUser: (user: User | undefined) => void;
+  addJoke: (joke: Joke) => void;
 };
 
 export const useUserStore = create<UserState>()(
@@ -18,7 +23,7 @@ export const useUserStore = create<UserState>()(
     persist(
       (set) => ({
         user: undefined,
-        setUser: (user: User) => set(() => ({ user })),
+        setUser: (user: User | undefined) => set(() => ({ user })),
         addJoke: (joke) => {
           set((state) =>
             state.user

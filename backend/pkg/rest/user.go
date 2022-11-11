@@ -112,6 +112,31 @@ func (uc UserController) Login(w http.ResponseWriter, r *http.Request) {
 	w.Write(body)
 }
 
+// Logout is a rest handler that removes user session.
+func (uc UserController) Logout(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	sID, err := r.Cookie("sid")
+	if err != nil {
+		HandleError(w, NewHttpError(err, http.StatusBadRequest, "Missing session id cookie"))
+		return
+	}
+
+	if err := uc.sessionManager.DeleteSession(ctx, sID.Value); err != nil {
+		HandleError(w, NewHttpError(err, http.StatusInternalServerError, ""))
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "sid",
+		HttpOnly: true,
+		Path:     "/",
+		Expires:  time.Now(),
+	})
+
+	w.WriteHeader(http.StatusOK)
+}
+
 // Me is a rest handler for retrieving current user.
 func (uc UserController) Me(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()

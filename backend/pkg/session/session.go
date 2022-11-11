@@ -48,6 +48,14 @@ func (m Manager) CreateSession(ctx context.Context, uID int) (string, error) {
 	return sID, nil
 }
 
+func (m Manager) DeleteSession(ctx context.Context, sID string) error {
+	if err := m.redisClient.Del(ctx, fmt.Sprint("session:", sID)).Err(); err != nil {
+		return fmt.Errorf("failed to exec redis query: %w", err)
+	}
+
+	return nil
+}
+
 func (m Manager) ReadSession(ctx context.Context, sID string) (*Session, error) {
 	sessionJson, err := m.redisClient.Get(ctx, fmt.Sprint("session:", sID)).Result()
 

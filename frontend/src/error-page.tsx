@@ -5,7 +5,7 @@ export const ErrorPage = () => {
   console.error(error);
 
   return (
-    <main className="w-full h-screen flex flex-col items-center justify-center gap-4">
+    <main className="flex h-screen w-full flex-col items-center justify-center gap-4">
       <h1 className="font-bold">Oops!</h1>
       <p>Sorry, an unexpected error has occured.</p>
       <p>
