@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
@@ -23,7 +22,7 @@ func NewUserRepo(dbPool *pgxpool.Pool) *UserRepo {
 
 // CreateUser creates a new user.
 func (ur UserRepo) Create(ctx context.Context, c app.User) (*app.User, error) {
-	row := ur.dbPool.QueryRow(ctx, "INSERT INTO users (name, email, password, jokes) VALUES ($1, $2, $3, '{}') RETURNING *", c.Name, c.Email, c.Password)
+	row := ur.dbPool.QueryRow(ctx, "INSERT INTO users (name, email, password, jokes) VALUES ($1, $2, $3, '[]'::jsonb) RETURNING *", c.Name, c.Email, c.Password)
 	return scanUser(row)
 }
 
@@ -40,8 +39,8 @@ func (ur UserRepo) FindByID(ctx context.Context, ID int) (*app.User, error) {
 }
 
 // SaveJoke saves a joke in user's joke collection.
-func (ur UserRepo) SaveJoke(ctx context.Context, userID int, serializedJoke string) error {
-	_, err := ur.dbPool.Exec(ctx, "UPDATE users SET jokes = ARRAY_APPEND(jokes, $1)", serializedJoke)
+func (ur UserRepo) SaveJoke(ctx context.Context, userID int, joke app.Joke) error {
+	_, err := ur.dbPool.Exec(ctx, "UPDATE users SET jokes = jokes || $1::jsonb WHERE id = $2", joke, userID)
 	if err != nil {
 		return fmt.Errorf("query failed: %w", err)
 	}
@@ -51,25 +50,13 @@ func (ur UserRepo) SaveJoke(ctx context.Context, userID int, serializedJoke stri
 
 // scanUser scans query row into User struct.
 func scanUser(r pgx.Row) (*app.User, error) {
-	user := &app.User{}
+	user := app.NewUser()
 
-	serializedJokes := make([]string, 0)
-
-	if err := r.Scan(&user.ID, &user.Name, &user.Email, &user.Password, &serializedJokes); err != nil {
+	if err := r.Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Jokes); err != nil {
 		if err == pgx.ErrNoRows {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("failed to scan: %w", err)
-	}
-
-	user.Jokes = make([]app.Joke, 0)
-
-	for _, serializedJoke := range serializedJokes {
-		var joke app.Joke
-		if err := json.Unmarshal([]byte(serializedJoke), &joke); err != nil {
-			return nil, fmt.Errorf("failed to deserialize the joke: %w", err)
-		}
-		user.Jokes = append(user.Jokes, joke)
 	}
 
 	return user, nil

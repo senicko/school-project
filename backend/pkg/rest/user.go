@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"time"
 
@@ -196,13 +195,13 @@ func (uc UserController) SaveJoke(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	jokeBytes, err := io.ReadAll(r.Body)
-	if err != nil {
+	var joke app.Joke
+	if err := json.NewDecoder(r.Body).Decode(&joke); err != nil {
 		HandleError(w, NewHttpError(err, http.StatusInternalServerError, ""))
 		return
 	}
 
-	if err := uc.userRepo.SaveJoke(ctx, user.ID, string(jokeBytes)); err != nil {
+	if err := uc.userRepo.SaveJoke(ctx, user.ID, joke); err != nil {
 		HandleError(w, NewHttpError(err, http.StatusInternalServerError, ""))
 		return
 	}

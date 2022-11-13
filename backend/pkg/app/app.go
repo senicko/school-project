@@ -18,12 +18,18 @@ type User struct {
 	Jokes    []Joke `json:"jokes"`
 }
 
+func NewUser() *User {
+	user := &User{}
+	user.Jokes = make([]Joke, 0)
+	return user
+}
+
 // UserRepo is an interface that must be implemented by a UserRepo
 type UserRepo interface {
 	Create(ctx context.Context, credentials User) (*User, error)
 	FindByEmail(ctx context.Context, email string) (*User, error)
 	FindByID(ctx context.Context, ID int) (*User, error)
-	SaveJoke(ctx context.Context, userID int, serializedJoke string) error
+	SaveJoke(ctx context.Context, userID int, joke Joke) error
 }
 
 var (

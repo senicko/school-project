@@ -1,6 +1,9 @@
 import ProfileImage from "../assets/profile.png";
 import { useUserStore } from "../state/user";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { ContextMenu } from "./context-menu";
+import { Cog6ToothIcon } from "@heroicons/react/24/outline";
 
 const logOut = async () => {
   await fetch("http://localhost:3000/users/logout", {
@@ -10,7 +13,7 @@ const logOut = async () => {
 
 export const Header = () => {
   const navigate = useNavigate();
-
+  const [contextMenuOpened, setContextMenuOpened] = useState(false);
   const user = useUserStore((state) => state.user);
   const setUser = useUserStore((state) => state.setUser);
 
@@ -19,6 +22,12 @@ export const Header = () => {
     setUser(undefined);
     navigate("/");
   };
+
+  useEffect(() => {
+    const toggleConextMenu = () => setContextMenuOpened((value) => !value);
+    window.addEventListener("click", toggleConextMenu);
+    return () => removeEventListener("click", toggleConextMenu);
+  }, []);
 
   return (
     <nav className="flex items-center justify-between gap-4">
@@ -31,7 +40,24 @@ export const Header = () => {
         <span className="font-medium text-gray-800">{user?.name}</span>
       </div>
 
-      <button onClick={handleLogOut}>Log Out</button>
+      {/* <button onClick={handleLogOut}>Log Out</button> */}
+      <span className="relative flex flex-col items-center justify-center">
+        <Cog6ToothIcon
+          className="h-6 w-6"
+          onClick={(e) => {
+            e.stopPropagation();
+            setContextMenuOpened(true);
+          }}
+        />
+        {contextMenuOpened && (
+          <div
+            className="absolute top-10 origin-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <ContextMenu onLogOut={handleLogOut}></ContextMenu>
+          </div>
+        )}
+      </span>
     </nav>
   );
 };

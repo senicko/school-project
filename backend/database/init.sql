@@ -7,13 +7,5 @@ CREATE TABLE users (
   name TEXT NOT NULL UNIQUE,
   email TEXT NOT NULL UNIQUE,
   password TEXT NOT NULL,
-  jokes TEXT[]
+  jokes JSONB
 );
-
--- CREATE TABLE word_sets (
---   id SERIAL PRIMARY KEY,
---   title TEXT NOT NULL,
---   words JSON NOT NULL,
---   user_id INT NOT NULL,
---   CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(id)
--- );
