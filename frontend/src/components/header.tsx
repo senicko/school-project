@@ -24,9 +24,9 @@ export const Header = () => {
   };
 
   useEffect(() => {
-    const toggleConextMenu = () => setContextMenuOpened((value) => !value);
-    window.addEventListener("click", toggleConextMenu);
-    return () => removeEventListener("click", toggleConextMenu);
+    const closeContextMenu = () => setContextMenuOpened(false);
+    window.addEventListener("click", closeContextMenu);
+    return () => removeEventListener("click", closeContextMenu);
   }, []);
 
   return (

@@ -52,10 +52,36 @@ export const JokesGenerator = () => {
   const [joke, setJoke] = useState("");
   const [timer, setTimer] = useState(10);
 
-  /**
-   * loadJoke fetches joke and replaces current joke with it.
-   */
-  const loadJoke = () => fetchJoke().then(({ joke }) => setJoke(joke));
+  // jokeInterval
+  useEffect(() => {
+    fetchJoke().then(({ joke }) => {
+      setJoke(joke);
+      setTimer(10);
+    });
+
+    let timerInterval = setInterval(
+      () => setTimer((timer) => (timer > 1 ? timer - 1 : timer)),
+      1000
+    );
+
+    const jokeInterval = setInterval(() => {
+      fetchJoke().then(({ joke }) => {
+        setJoke(joke);
+        setTimer(10);
+
+        clearInterval(timerInterval);
+        timerInterval = setInterval(
+          () => setTimer((timer) => (timer > 1 ? timer - 1 : timer)),
+          1000
+        );
+      });
+    }, 10 * 1000);
+
+    return () => {
+      clearInterval(timerInterval);
+      clearInterval(jokeInterval);
+    };
+  }, []);
 
   /**
    * bookmark saves the joke in user's collection.
@@ -68,21 +94,6 @@ export const JokesGenerator = () => {
       savedAt,
     });
   };
-
-  // useEffect that updates the timer
-  useEffect(() => {
-    let timerInterval = setInterval(
-      () => setTimer((timer) => (timer <= 1 ? 10 : timer - 1)),
-      1000
-    );
-
-    return () => clearInterval(timerInterval);
-  }, []);
-
-  // useEffect that fetches jokes when timer gets down to 0.
-  useEffect(() => {
-    if (timer == 10) loadJoke();
-  }, [timer]);
 
   return (
     <div className="flex flex-col items-center justify-center gap-8">
